@@ -20,6 +20,7 @@ struct TopBarView: View {
                 Image(systemName: "line.3.horizontal")
                     .font(.title2)
                     .foregroundColor(.black)
+                    .frame(width: 44, alignment: .leading)
             }
 
             Spacer()
@@ -27,6 +28,7 @@ struct TopBarView: View {
             Text(title)
                 .font(.headline)
                 .fontWeight(.bold)
+                .foregroundColor(.black)
 
             Spacer()
 
@@ -36,14 +38,11 @@ struct TopBarView: View {
                 Image(systemName: "bell")
                     .font(.title2)
                     .foregroundColor(.black)
+                    .frame(width: 44, alignment: .trailing)
             }
         }
         .padding()
         .background(Color.white)
         .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
     }
-}
-
-#Preview {
-    TopBarView(title: "Home")
 }
