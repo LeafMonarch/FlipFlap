@@ -105,6 +105,12 @@ struct StudentLoginFlowView: View {
 
     private var secretCodeSection: some View {
         VStack(spacing: 24) {
+            Image("MascotDancing")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 260)
+                .padding(.top, 8)
+            
             Text("Enter Your Secret Code")
                 .font(AppTheme.Typography.screenTitle)
                 .multilineTextAlignment(.center)
