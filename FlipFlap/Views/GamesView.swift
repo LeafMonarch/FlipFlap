@@ -7,7 +7,11 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct GamesView: View {
+    @State private var selectedGame: GameCardItem? = nil
+
     private let columns = [
         GridItem(.flexible(), spacing: 14),
         GridItem(.flexible(), spacing: 14)
@@ -18,19 +22,61 @@ struct GamesView: View {
             title: "Nature",
             imageName: "game_environment",
             iconName: "leaf.fill",
-            accentColor: .green
+            accentColor: .green,
+            overlayContent: GameOverlayContent(
+                description: "In this lesson, you will learn how to manage your waste; Food waste, Rubbish, Recyclables.",
+                tip: "Tip: Where do these go?",
+                options: [
+                    [
+                        OptionItem(title: "Plastic", color: .green, textColor: .white),
+                        OptionItem(title: "Chicken", color: .green, textColor: .white)
+                    ],
+                    [
+                        OptionItem(title: "Recyclable", color: Color.blue.opacity(0.22), textColor: .blue),
+                        OptionItem(title: "Food Waste", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ]
+                ]
+            )
         ),
         GameCardItem(
             title: "Maths",
             imageName: "game_maths",
             iconName: "plus.forwardslash.minus",
-            accentColor: .pink
+            accentColor: .pink,
+            overlayContent: GameOverlayContent(
+                description: "In this lesson, you will learn how to add, subtract, multiply and divide two numbers!",
+                tip: "Tip: What is 4 x 2?",
+                options: [
+                    [
+                        OptionItem(title: "2", color: Color.blue.opacity(0.22), textColor: .blue),
+                        OptionItem(title: "6", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ],
+                    [
+                        OptionItem(title: "8", color: .green, textColor: .white),
+                        OptionItem(title: "4", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ]
+                ]
+            )
         ),
         GameCardItem(
             title: "Sports",
             imageName: "game_pe",
             iconName: "basketball.fill",
-            accentColor: .orange
+            accentColor: .orange,
+            overlayContent: GameOverlayContent(
+                description: "In this lesson, you will learn about sports, movement, and healthy activities.",
+                tip: "Tip: Which one is a sport?",
+                options: [
+                    [
+                        OptionItem(title: "Football", color: .orange, textColor: .white),
+                        OptionItem(title: "Basketball", color: .orange, textColor: .white)
+                    ],
+                    [
+                        OptionItem(title: "Reading", color: Color.blue.opacity(0.22), textColor: .blue),
+                        OptionItem(title: "Sleeping", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ]
+                ]
+            )
         )
     ]
 
@@ -44,21 +90,40 @@ struct GamesView: View {
                 print("Notification tapped in Games")
             }
         ) {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 18) {
-                    FeaturedGameBanner(imageName: "games_banner")
+            ZStack {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 18) {
+                        FeaturedGameBanner(imageName: "games_banner")
 
-                    LazyVGrid(columns: columns, spacing: 18) {
-                        ForEach(gameCards) { card in
-                            GameCardView(card: card)
+                        LazyVGrid(columns: columns, spacing: 18) {
+                            ForEach(gameCards) { card in
+                                GameCardView(card: card) {
+                                    selectedGame = card
+                                }
+                            }
                         }
                     }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 18)
+                    .padding(.bottom, 110)
                 }
-                .padding(.horizontal, 18)
-                .padding(.top, 18)
-                .padding(.bottom, 110)
+                .background(Color(red: 0.90, green: 0.94, blue: 0.96))
+
+                if let selectedGame {
+                    GameStartOverlay(
+                        game: selectedGame,
+                        onClose: {
+                            self.selectedGame = nil
+                        },
+                        onStart: {
+                            print("Start \(selectedGame.title)")
+                            self.selectedGame = nil
+                        }
+                    )
+                    .transition(.opacity)
+                    .zIndex(10)
+                }
             }
-            .background(Color(red: 0.90, green: 0.94, blue: 0.96))
         }
     }
 }
@@ -85,11 +150,10 @@ struct FeaturedGameBanner: View {
 
 struct GameCardView: View {
     let card: GameCardItem
+    let onTap: () -> Void
 
     var body: some View {
-        Button {
-            print("\(card.title) tapped")
-        } label: {
+        Button(action: onTap) {
             ZStack(alignment: .bottomLeading) {
                 Image(card.imageName)
                     .resizable()
@@ -135,4 +199,17 @@ struct GameCardItem: Identifiable {
     let imageName: String
     let iconName: String
     let accentColor: Color
+    let overlayContent: GameOverlayContent
+}
+
+struct GameOverlayContent {
+    let description: String
+    let tip: String
+    let options: [[OptionItem]]
+}
+
+struct OptionItem {
+    let title: String
+    let color: Color
+    let textColor: Color
 }
