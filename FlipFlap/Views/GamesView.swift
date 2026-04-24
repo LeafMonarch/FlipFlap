@@ -12,9 +12,9 @@ struct GamesView: View {
         NavigationStack {
             PageLayoutView(
                 title: "Games",
-                onMenuTap: {
-                    print("Menu tapped in Dashboard")
-                },
+//                onMenuTap: {
+//                    print("Menu tapped in Dashboard")
+//                },
                 onNotificationTap: {
                     print("Notification tapped in Dashboard")
                 }

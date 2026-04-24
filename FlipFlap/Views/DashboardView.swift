@@ -12,9 +12,6 @@ struct DashboardView: View {
         NavigationStack {
             PageLayoutView(
                 title: "Home",
-                onMenuTap: {
-                    print("Menu tapped in Dashboard")
-                },
                 onNotificationTap: {
                     print("Notification tapped in Dashboard")
                 }

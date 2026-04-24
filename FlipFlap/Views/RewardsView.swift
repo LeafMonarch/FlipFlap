@@ -12,9 +12,6 @@ struct RewardsView: View {
         NavigationStack {
             PageLayoutView(
                 title: "Rewards",
-                onMenuTap: {
-                    print("Menu tapped in Dashboard")
-                },
                 onNotificationTap: {
                     print("Notification tapped in Dashboard")
                 }

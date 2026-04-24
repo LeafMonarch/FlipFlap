@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct PageLayoutView<Content: View>: View {
+    @EnvironmentObject private var appSession: AppSession
+    @State private var isMenuOpen = false
+
     var title: String
     var onMenuTap: (() -> Void)? = nil
     var onNotificationTap: (() -> Void)? = nil
@@ -26,16 +29,59 @@ struct PageLayoutView<Content: View>: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            TopBarView(
-                title: title,
-                onMenuTap: onMenuTap,
-                onNotificationTap: onNotificationTap
-            )
+        ZStack(alignment: .leading) {
+            VStack(spacing: 0) {
+                TopBarView(
+                    title: title,
+                    onMenuTap: {
+                        if let onMenuTap {
+                            onMenuTap()
+                        } else {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                isMenuOpen = true
+                            }
+                        }
+                    },
+                    onNotificationTap: onNotificationTap
+                )
 
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .navigationBarHidden(true)
+            .disabled(isMenuOpen)
+
+            if isMenuOpen {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isMenuOpen = false
+                        }
+                    }
+
+                SideMenuView(
+                    onHelpTap: {
+                        print("Help tapped")
+                    },
+                    onAboutTap: {
+                        print("About tapped")
+                    },
+                    onSettingsTap: {
+                        print("Settings tapped")
+                    },
+                    onLogoutTap: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isMenuOpen = false
+                        }
+
+                        appSession.logOut()
+                    }
+                )
+                .frame(width: 300)
+                .transition(.move(edge: .leading))
+                .zIndex(1)
+            }
         }
-        .navigationBarHidden(true)
     }
 }
