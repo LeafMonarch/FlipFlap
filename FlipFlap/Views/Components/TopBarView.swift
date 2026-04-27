@@ -20,7 +20,7 @@ struct TopBarView: View {
                 Image(systemName: "line.3.horizontal")
                     .font(.title2)
                     .foregroundColor(.black)
-                    .frame(width: 44, alignment: .leading)
+                    .frame(width: 44, height: 44)
             }
 
             Spacer()
@@ -38,10 +38,12 @@ struct TopBarView: View {
                 Image(systemName: "bell")
                     .font(.title2)
                     .foregroundColor(.black)
-                    .frame(width: 44, alignment: .trailing)
+                    .frame(width: 44, height: 44)
             }
         }
-        .padding()
+        .padding(.horizontal, 28)
+        .padding(.top, 8)
+        .padding(.bottom, 10)§
         .background(Color.white)
         .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
     }
