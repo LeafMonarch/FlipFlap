@@ -255,6 +255,8 @@ struct StudentLoginFlowView: View {
                 try authController.validateSportLogin(student: student, selected: selectedSport)
             }
 
+            authController.updateStreak(for: student, modelContext: modelContext)
+            
             authenticatedStudent = student
         } catch {
             errorMessage = error.localizedDescription

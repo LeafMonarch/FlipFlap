@@ -12,6 +12,8 @@ enum AppTheme {
         // MARK: - Brand Palette
         static let bluePrimary = Color(red: 24/255, green: 205/255, blue: 251/255)
         static let blueSecondary = Color(red: 96/255, green: 168/255, blue: 255/255)
+        static let orangePrimary = Color(red: 253/255, green: 115/255, blue: 8/255)
+        static let orangeSecondary = Color(red: 254/255, green: 184/255, blue: 92/255)
 
         // MARK: - Semantic Colors
         static let splashGradientTop = blueSecondary
@@ -33,5 +35,8 @@ enum AppTheme {
         static let sectionTitle = Font.custom("Poppins-SemiBold", size: 20)
         static let body = Font.custom("Poppins-Regular", size: 16)
         static let caption = Font.custom("Poppins-Medium", size: 12)
+        
+        static let dashboardTitle = Font.custom("Poppins-Bold", size: 20)
+        static let dashboardMessage = Font.custom("Poppins-Bold", size: 12)
     }
 }

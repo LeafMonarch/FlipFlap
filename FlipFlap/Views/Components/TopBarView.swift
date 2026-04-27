@@ -46,3 +46,6 @@ struct TopBarView: View {
         .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
     }
 }
+#Preview {
+    TopBarView(title: "Hello World")
+}
