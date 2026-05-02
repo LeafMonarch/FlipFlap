@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct GamesView: View {
     @State private var selectedGame: GameCardItem? = nil
+    @State private var categoryGame: GameCardItem? = nil
+    @State private var showCategory = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 14),
@@ -116,12 +116,20 @@ struct GamesView: View {
                             self.selectedGame = nil
                         },
                         onStart: {
-                            print("Start \(selectedGame.title)")
+                            categoryGame = selectedGame
                             self.selectedGame = nil
+                            showCategory = true
                         }
                     )
                     .transition(.opacity)
                     .zIndex(10)
+                }
+            }
+            .navigationDestination(isPresented: $showCategory) {
+                Group {
+                    if let categoryGame {
+                        GameCategoryView(game: categoryGame)
+                    }
                 }
             }
         }
@@ -129,7 +137,9 @@ struct GamesView: View {
 }
 
 #Preview {
-    GamesView()
+    NavigationStack {
+        GamesView()
+    }
 }
 
 // MARK: - Components
@@ -188,8 +198,6 @@ struct BadgeIconView: View {
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(accentColor)
         }
-        .padding(.leading, 0)
-        .padding(.bottom, 0)
     }
 }
 
