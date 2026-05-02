@@ -29,6 +29,21 @@ struct GameCategoryView: View {
                     backgroundColor: .red
                 )
             ]
+        } else if game.title == "Sports" {
+            return [
+                GameCategoryItem(
+                    id: "jumping-jacks",
+                    title: "Jumping\nJacks",
+                    imageName: "jumping_jacks_category",
+                    backgroundColor: .orange
+                ),
+                GameCategoryItem(
+                    id: "running-in-place",
+                    title: "Running\nIn Place",
+                    imageName: "running_in_place_category",
+                    backgroundColor: .orange
+                )
+            ]
         } else {
             return [
                 GameCategoryItem(
