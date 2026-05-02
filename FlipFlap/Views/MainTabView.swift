@@ -11,23 +11,29 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             
-            DashboardView()
-                .tabItem {
-                    Image(systemName: "book.fill")
-                    Text("Home")
-                }
+            NavigationStack {
+                DashboardView()
+            }
+            .tabItem {
+                Image(systemName: "book.fill")
+                Text("Home")
+            }
 
-            GamesView()
-                .tabItem {
-                    Image(systemName: "gamecontroller.fill")
-                    Text("Games")
-                }
+            NavigationStack {
+                GamesView()
+            }
+            .tabItem {
+                Image(systemName: "gamecontroller.fill")
+                Text("Games")
+            }
 
-            RewardsView()
-                .tabItem {
-                    Image(systemName: "trophy.fill")
-                    Text("Rewards")
-                }
+            NavigationStack {
+                RewardsView()
+            }
+            .tabItem {
+                Image(systemName: "trophy.fill")
+                Text("Rewards")
+            }
         }
         .tint(Color.blue) // selected icon/text colour
         .toolbarBackground(.visible, for: .tabBar)
