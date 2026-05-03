@@ -1,0 +1,203 @@
+//
+//  MathSubtractionGameView.swift
+//  FlipFlap
+//
+//  Created by Raph on 03/05/2026.
+//
+
+import SwiftUI
+
+struct MathsSubtractionGameView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    struct SubtractionQuestion {
+        let question: String
+        let options: [Int]
+        let correctAnswer: Int
+    }
+
+    @State private var questionIndex = 0
+    @State private var selectedAnswer: Int? = nil
+    @State private var hasChecked = false
+    @State private var score = 0
+
+    private let mainRed = Color.red
+
+    private let questions: [SubtractionQuestion] = [
+        SubtractionQuestion(question: "5 - 2", options: [2, 3, 4, 5], correctAnswer: 3),
+        SubtractionQuestion(question: "8 - 4", options: [2, 3, 4, 6], correctAnswer: 4),
+        SubtractionQuestion(question: "10 - 6", options: [3, 4, 5, 6], correctAnswer: 4),
+        SubtractionQuestion(question: "9 - 3", options: [5, 6, 7, 8], correctAnswer: 6)
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            header
+                .frame(height: 180)
+
+            questionCard
+                .padding(.top, 42)
+
+            answerGrid
+                .padding(.top, 42)
+
+            Spacer()
+
+            bottomButton
+        }
+        .background(Color.white)
+        .ignoresSafeArea(edges: .top)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+    }
+
+    private var header: some View {
+        ZStack(alignment: .trailing) {
+            VStack(spacing: 6) {
+                Text("\(questionIndex + 1) / \(questions.count)")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(.white)
+
+                Text("Subtraction")
+                    .font(.system(size: 40, weight: .heavy))
+                    .foregroundColor(.white)
+            }
+            .padding(.top, 52)
+            .frame(maxWidth: .infinity)
+
+            Button {
+                dismiss()
+            } label: {
+                Text("x")
+                    .font(.system(size: 34, weight: .heavy))
+                    .foregroundColor(.white)
+                    .padding(.trailing, 34)
+                    .padding(.top, 60)
+            }
+        }
+        .background(mainRed)
+    }
+
+    private var questionCard: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(mainRed)
+                .frame(height: 150)
+                .shadow(color: .black.opacity(0.22), radius: 0, x: 6, y: 7)
+
+            VStack(spacing: 24) {
+                Text("Question \(questionIndex + 1):")
+                    .font(.system(size: 28, weight: .heavy))
+                    .foregroundColor(.white)
+
+                Text("What is \(questions[questionIndex].question)?")
+                    .font(.system(size: 30, weight: .medium))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal, 48)
+    }
+
+    private var answerGrid: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: 18),
+                GridItem(.flexible(), spacing: 18)
+            ],
+            spacing: 18
+        ) {
+            ForEach(questions[questionIndex].options, id: \.self) { answer in
+                Button {
+                    if !hasChecked {
+                        selectedAnswer = answer
+                    }
+                } label: {
+                    Text("\(answer)")
+                        .font(.system(size: 32, weight: .heavy))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 90)
+                        .background(answerColor(answer))
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .shadow(color: .black.opacity(0.22), radius: 0, x: 5, y: 6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(selectedAnswer == answer && !hasChecked ? Color.blue : Color.clear, lineWidth: 5)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 48)
+    }
+
+    private var bottomButton: some View {
+        Button {
+            if hasChecked {
+                goToNextQuestion()
+            } else {
+                checkAnswer()
+            }
+        } label: {
+            Text(hasChecked ? nextButtonTitle : "Check")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 55)
+                .background(
+                    LinearGradient(
+                        colors: [Color.blue, Color.cyan],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        }
+        .disabled(selectedAnswer == nil)
+        .opacity(selectedAnswer == nil ? 0.5 : 1)
+    }
+
+    private var nextButtonTitle: String {
+        questionIndex == questions.count - 1 ? "Finish" : "Next"
+    }
+
+    private func answerColor(_ answer: Int) -> Color {
+        if !hasChecked {
+            return mainRed
+        }
+
+        if answer == questions[questionIndex].correctAnswer {
+            return .green
+        }
+
+        if answer == selectedAnswer {
+            return .red
+        }
+
+        return .gray.opacity(0.6)
+    }
+
+    private func checkAnswer() {
+        hasChecked = true
+
+        if selectedAnswer == questions[questionIndex].correctAnswer {
+            score += 1
+        }
+    }
+
+    private func goToNextQuestion() {
+        if questionIndex < questions.count - 1 {
+            questionIndex += 1
+            selectedAnswer = nil
+            hasChecked = false
+        } else {
+            print("Subtraction finished. Score: \(score)")
+            dismiss()
+        }
+    }
+}
+
+#Preview {
+    MathsSubtractionGameView()
+}
