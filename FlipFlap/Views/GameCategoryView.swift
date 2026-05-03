@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct GameCategoryView: View {
     let game: GameCardItem
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var appSession: AppSession
+
+    @Query private var savedScores: [GameScore]
 
     @State private var selectedCategoryID: String? = nil
     @State private var showNatureWasteGame = false
@@ -46,6 +50,33 @@ struct GameCategoryView: View {
         }
     }
 
+    private func gameName(for categoryID: String) -> String {
+        switch categoryID {
+        case "addition":
+            return "Addition"
+        case "subtraction":
+            return "Subtraction"
+        case "waste-management":
+            return "Waste Management"
+        case "animal-food-chain":
+            return "Animal Food Chain"
+        default:
+            return categoryID
+        }
+    }
+
+    private func hasCompleted(_ category: GameCategoryItem) -> Bool {
+        guard let student = appSession.authenticatedStudent else {
+            return false
+        }
+
+        let name = gameName(for: category.id)
+
+        return savedScores.contains {
+            $0.studentID == student.id && $0.gameName == name
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -63,11 +94,16 @@ struct GameCategoryView: View {
 
                     VStack(spacing: 16) {
                         ForEach(categories) { category in
+                            let completed = hasCompleted(category)
+
                             CategoryRowCard(
                                 category: category,
-                                isSelected: selectedCategoryID == category.id
+                                isSelected: selectedCategoryID == category.id,
+                                isCompleted: completed
                             ) {
-                                selectedCategoryID = category.id
+                                if !completed {
+                                    selectedCategoryID = category.id
+                                }
                             }
                         }
                     }
@@ -149,16 +185,31 @@ struct GameCategoryView: View {
 struct CategoryRowCard: View {
     let category: GameCategoryItem
     let isSelected: Bool
+    let isCompleted: Bool
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
             HStack {
-                Text(category.title)
-                    .font(.system(size: 23, weight: .heavy))
-                    .foregroundColor(.white)
-                    .lineSpacing(7)
-                    .padding(.leading, 22)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(category.title)
+                        .font(.system(size: 23, weight: .heavy))
+                        .foregroundColor(.white)
+                        .lineSpacing(7)
+
+                    if isCompleted {
+                        Text("Completed")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.green)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        Image(systemName: "lock.fill")
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.leading, 22)
 
                 Spacer()
 
@@ -186,6 +237,14 @@ struct CategoryRowCard: View {
             .animation(.spring(response: 0.25, dampingFraction: 0.75), value: isSelected)
         }
         .buttonStyle(.plain)
+        .disabled(isCompleted)
+        .opacity(1)
+        .overlay(
+            isCompleted
+            ? Color.black.opacity(0.25)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+            : nil
+        )
     }
 }
 
@@ -195,3 +254,5 @@ struct GameCategoryItem: Identifiable, Equatable {
     let imageName: String
     let backgroundColor: Color
 }
+
+
