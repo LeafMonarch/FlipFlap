@@ -91,4 +91,33 @@ final class AuthController {
             throw AuthError.wrongSecretCode
         }
     }
+    
+    func updateStreak(for student: Student, modelContext: ModelContext) {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        guard let lastDate = student.lastStreakUpdateDate else {
+            student.streak = 1
+            student.lastStreakUpdateDate = today
+            try? modelContext.save()
+            return
+        }
+
+        let lastLoginDay = calendar.startOfDay(for: lastDate)
+
+        if calendar.isDate(lastLoginDay, inSameDayAs: today) {
+            return
+        }
+
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: today),
+           calendar.isDate(lastLoginDay, inSameDayAs: yesterday) {
+            student.streak += 1
+        } else {
+            student.streak = 1
+        }
+
+        student.lastStreakUpdateDate = today
+        try? modelContext.save()
+    }
 }
+

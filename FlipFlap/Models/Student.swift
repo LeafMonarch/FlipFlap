@@ -38,6 +38,7 @@ final class Student {
     var favouriteColourRaw: String?
     var favouriteSportRaw: String?
     var streak: Int
+    var lastStreakUpdateDate: Date?
     var levelTitle: String
     var createdAt: Date
 
@@ -49,6 +50,7 @@ final class Student {
         favouriteColour: FavouriteColour? = nil,
         favouriteSport: FavouriteSport? = nil,
         streak: Int = 0,
+        lastStreakUpdateDate: Date? = nil,
         levelTitle: String = "Challenger",
         createdAt: Date = Date()
     ) {
@@ -61,6 +63,7 @@ final class Student {
         self.favouriteColourRaw = favouriteColour?.rawValue
         self.favouriteSportRaw = favouriteSport?.rawValue
         self.streak = streak
+        self.lastStreakUpdateDate = lastStreakUpdateDate
         self.levelTitle = levelTitle
         self.createdAt = createdAt
     }
