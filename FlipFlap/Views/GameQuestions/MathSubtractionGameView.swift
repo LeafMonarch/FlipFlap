@@ -1,9 +1,16 @@
+//
+//  MathSubtractionGameView.swift
+//  FlipFlap
+//
+//  Created by Raph on 03/05/2026.
+//
+
 import SwiftUI
 
-struct MathsAdditionGameView: View {
+struct MathsSubtractionGameView: View {
     @Environment(\.dismiss) private var dismiss
 
-    struct AdditionQuestion {
+    struct SubtractionQuestion {
         let question: String
         let options: [Int]
         let correctAnswer: Int
@@ -16,11 +23,11 @@ struct MathsAdditionGameView: View {
 
     private let mainRed = Color.red
 
-    private let questions: [AdditionQuestion] = [
-        AdditionQuestion(question: "2 + 3", options: [4, 5, 6, 7], correctAnswer: 5),
-        AdditionQuestion(question: "4 + 4", options: [6, 7, 8, 9], correctAnswer: 8),
-        AdditionQuestion(question: "6 + 2", options: [7, 8, 9, 10], correctAnswer: 8),
-        AdditionQuestion(question: "3 + 5", options: [6, 7, 8, 9], correctAnswer: 8)
+    private let questions: [SubtractionQuestion] = [
+        SubtractionQuestion(question: "5 - 2", options: [2, 3, 4, 5], correctAnswer: 3),
+        SubtractionQuestion(question: "8 - 4", options: [2, 3, 4, 6], correctAnswer: 4),
+        SubtractionQuestion(question: "10 - 6", options: [3, 4, 5, 6], correctAnswer: 4),
+        SubtractionQuestion(question: "9 - 3", options: [5, 6, 7, 8], correctAnswer: 6)
     ]
 
     var body: some View {
@@ -52,7 +59,7 @@ struct MathsAdditionGameView: View {
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(.white)
 
-                Text("Addition")
+                Text("Subtraction")
                     .font(.system(size: 40, weight: .heavy))
                     .foregroundColor(.white)
             }
@@ -185,12 +192,12 @@ struct MathsAdditionGameView: View {
             selectedAnswer = nil
             hasChecked = false
         } else {
-            print("Addition finished. Score: \(score)")
+            print("Subtraction finished. Score: \(score)")
             dismiss()
         }
     }
 }
 
 #Preview {
-    MathsAdditionGameView()
+    MathsSubtractionGameView()
 }
