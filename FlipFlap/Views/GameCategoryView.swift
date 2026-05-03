@@ -12,37 +12,18 @@ struct GameCategoryView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedCategoryID: String? = nil
+    @State private var showNatureWasteGame = false
 
     private var categories: [GameCategoryItem] {
         if game.title == "Maths" {
             return [
-                GameCategoryItem(
-                    id: "addition",
-                    title: "Addition",
-                    imageName: "addition_category",
-                    backgroundColor: .red
-                ),
-                GameCategoryItem(
-                    id: "subtraction",
-                    title: "Subtraction",
-                    imageName: "subtraction_category",
-                    backgroundColor: .red
-                )
+                GameCategoryItem(id: "addition", title: "Addition", imageName: "addition_category", backgroundColor: .red),
+                GameCategoryItem(id: "subtraction", title: "Subtraction", imageName: "subtraction_category", backgroundColor: .red)
             ]
         } else if game.title == "Sports" {
             return [
-                GameCategoryItem(
-                    id: "jumping-jacks",
-                    title: "Jumping\nJacks",
-                    imageName: "jumping_jacks_category",
-                    backgroundColor: .orange
-                ),
-                GameCategoryItem(
-                    id: "running-in-place",
-                    title: "Running\nIn Place",
-                    imageName: "running_in_place_category",
-                    backgroundColor: .orange
-                )
+                GameCategoryItem(id: "jumping-jacks", title: "Jumping\nJacks", imageName: "jumping_jacks_category", backgroundColor: .orange),
+                GameCategoryItem(id: "running-in-place", title: "Running\nIn Place", imageName: "running_in_place_category", backgroundColor: .orange)
             ]
         } else {
             return [
@@ -96,7 +77,9 @@ struct GameCategoryView: View {
             .background(Color.white)
 
             Button {
-                if let selectedCategoryID {
+                if selectedCategoryID == "waste-management" && game.title == "Nature" {
+                    showNatureWasteGame = true
+                } else if let selectedCategoryID {
                     print("Start \(selectedCategoryID)")
                 }
             } label: {
@@ -113,6 +96,9 @@ struct GameCategoryView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .navigationDestination(isPresented: $showNatureWasteGame) {
+            NatureWasteGameView()
+        }
     }
 
     private var header: some View {
