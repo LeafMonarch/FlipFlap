@@ -139,23 +139,9 @@ struct NatureAnimalFoodChainGameView: View {
 
     private var animalBinsRow: some View {
         HStack(spacing: 14) {
-            AnimalBinCard(
-                title: "Omnivore",
-                imageName: "omnivore_bin",
-                green: mainGreen
-            )
-
-            AnimalBinCard(
-                title: "Herbivore",
-                imageName: "herbivore_bin",
-                green: mainGreen
-            )
-
-            AnimalBinCard(
-                title: "Carnivore",
-                imageName: "carnivore_bin",
-                green: mainGreen
-            )
+            AnimalBinCard(title: "Omnivore", imageName: "omnivore_bin", green: mainGreen)
+            AnimalBinCard(title: "Herbivore", imageName: "herbivore_bin", green: mainGreen)
+            AnimalBinCard(title: "Carnivore", imageName: "carnivore_bin", green: mainGreen)
         }
         .padding(.horizontal, 48)
     }
@@ -169,9 +155,17 @@ struct NatureAnimalFoodChainGameView: View {
         .padding(.horizontal, 48)
     }
 
+    private var canUseBottomButton: Bool {
+        hasChecked || currentItems.allSatisfy { $0.selectedBin != nil }
+    }
+
     private var bottomButton: some View {
         Button {
-            hasChecked ? goToNextQuestion() : checkAnswers()
+            if hasChecked {
+                goToNextQuestion()
+            } else {
+                checkAnswers()
+            }
         } label: {
             Text(hasChecked ? nextButtonTitle : "Check")
                 .font(.system(size: 32, weight: .bold))
@@ -186,6 +180,8 @@ struct NatureAnimalFoodChainGameView: View {
                     )
                 )
         }
+        .disabled(!canUseBottomButton)
+        .opacity(canUseBottomButton ? 1 : 0.5)
     }
 
     private var nextButtonTitle: String {

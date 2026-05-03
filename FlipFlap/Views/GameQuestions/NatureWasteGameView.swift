@@ -1,3 +1,10 @@
+//
+//  NatureAnimalFoodChainGameView.swift
+//  FlipFlap
+//
+//  Created by Raph on 02/05/2026.
+//
+
 import SwiftUI
 
 struct NatureWasteGameView: View {
@@ -148,6 +155,10 @@ struct NatureWasteGameView: View {
         .padding(.horizontal, 48)
     }
 
+    private var canUseBottomButton: Bool {
+        hasChecked || currentItems.allSatisfy { $0.selectedBin != nil }
+    }
+
     private var bottomButton: some View {
         Button {
             if hasChecked {
@@ -169,6 +180,8 @@ struct NatureWasteGameView: View {
                     )
                 )
         }
+        .disabled(!canUseBottomButton)
+        .opacity(canUseBottomButton ? 1 : 0.5)
     }
 
     private var nextButtonTitle: String {
@@ -307,7 +320,7 @@ struct DraggableWasteItem: View {
             )
             .gesture(
                 isLocked ? nil :
-                DragGesture()
+                    DragGesture()
                     .onChanged { value in
                         item.offset = value.translation
                     }
