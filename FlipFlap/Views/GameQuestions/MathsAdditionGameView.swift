@@ -1,7 +1,19 @@
+//
+//  MathSubtractionGameView.swift
+//  FlipFlap
+//
+//  Created by Raph on 03/05/2026.
+//
+
 import SwiftUI
+import SwiftData
 
 struct MathsAdditionGameView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var appSession: AppSession
+    
+    @Query(sort: \GameScore.playedAt, order: .reverse) private var savedScores: [GameScore]
 
     struct AdditionQuestion {
         let question: String
@@ -13,6 +25,47 @@ struct MathsAdditionGameView: View {
     @State private var selectedAnswer: Int? = nil
     @State private var hasChecked = false
     @State private var score = 0
+    
+    private func saveGameScore(gameName: String, correct: Int, total: Int) {
+        guard let student = appSession.authenticatedStudent else {
+            print("No logged in student")
+            return
+        }
+
+        let gameScore = GameScore(
+            gameName: gameName,
+            correctAnswers: correct,
+            wrongAnswers: total - correct,
+            totalQuestions: total,
+            studentID: student.id,
+            studentName: student.name
+        )
+
+        modelContext.insert(gameScore)
+
+        do {
+            try modelContext.save()
+            print("Score saved")
+
+            print("----- RAW SAVED SCORES -----")
+
+            for score in savedScores {
+                print("""
+                Game: \(score.gameName)
+                Correct: \(score.correctAnswers)
+                Wrong: \(score.wrongAnswers)
+                Total: \(score.totalQuestions)
+                Student ID: \(score.studentID)
+                Student Name: \(score.studentName)
+                Played At: \(score.playedAt)
+                -------------------------
+                """)
+            }
+
+        } catch {
+            print("Could not save score: \(error.localizedDescription)")
+        }
+    }
 
     private let mainRed = Color.red
 
@@ -185,7 +238,12 @@ struct MathsAdditionGameView: View {
             selectedAnswer = nil
             hasChecked = false
         } else {
-            print("Addition finished. Score: \(score)")
+            saveGameScore(
+                gameName: "Addition",
+                correct: score,
+                total: questions.count
+            )
+
             dismiss()
         }
     }

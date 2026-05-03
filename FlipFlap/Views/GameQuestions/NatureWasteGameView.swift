@@ -6,14 +6,60 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct NatureWasteGameView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var appSession: AppSession
+    
+    @Query(sort: \GameScore.playedAt, order: .reverse) private var savedScores: [GameScore]
 
     @State private var questionIndex = 0
     @State private var score = 0
     @State private var currentItems: [WasteItem] = []
     @State private var hasChecked = false
+    
+    private func saveGameScore(gameName: String, correct: Int, total: Int) {
+        guard let student = appSession.authenticatedStudent else {
+            print("No logged in student")
+            return
+        }
+
+        let gameScore = GameScore(
+            gameName: gameName,
+            correctAnswers: correct,
+            wrongAnswers: total - correct,
+            totalQuestions: total,
+            studentID: student.id,
+            studentName: student.name
+        )
+
+        modelContext.insert(gameScore)
+
+        do {
+            try modelContext.save()
+            print("Score saved")
+
+            print("----- RAW SAVED SCORES -----")
+
+            for score in savedScores {
+                print("""
+                Game: \(score.gameName)
+                Correct: \(score.correctAnswers)
+                Wrong: \(score.wrongAnswers)
+                Total: \(score.totalQuestions)
+                Student ID: \(score.studentID)
+                Student Name: \(score.studentName)
+                Played At: \(score.playedAt)
+                -------------------------
+                """)
+            }
+
+        } catch {
+            print("Could not save score: \(error.localizedDescription)")
+        }
+    }
 
     private let mainGreen = Color(red: 0.31, green: 0.78, blue: 0.31)
 
@@ -203,7 +249,14 @@ struct NatureWasteGameView: View {
             questionIndex += 1
             loadQuestion()
         } else {
-            print("Game finished. Score: \(score)")
+            let totalItems = questions.reduce(0) { $0 + $1.items.count }
+
+            saveGameScore(
+                gameName: "Waste Management",
+                correct: score,
+                total: totalItems
+            )
+
             dismiss()
         }
     }

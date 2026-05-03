@@ -15,7 +15,8 @@ struct FlipFlapApp: App {
         
         // Defines the 'Schema', essentially a list of what types of data (like Students) we want to save
         let schema = Schema([
-            Student.self    // Tells SwiftData that the 'Student' model should be stored in the database
+            Student.self,    // Tells SwiftData that the 'Student' model should be stored in the database
+            GameScore.self
         ])
 
         // Sets up how the data is stored (e.g., should it be saved to disk or just kept in temporary memory?)
