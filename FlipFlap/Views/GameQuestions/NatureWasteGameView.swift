@@ -1,10 +1,3 @@
-//
-//  NatureWasteGameView.swift
-//  FlipFlap
-//
-//  Created by Raph on 03/05/2026.
-//
-
 import SwiftUI
 
 struct NatureWasteGameView: View {
@@ -13,6 +6,7 @@ struct NatureWasteGameView: View {
     @State private var questionIndex = 0
     @State private var score = 0
     @State private var currentItems: [WasteItem] = []
+    @State private var hasChecked = false
 
     private let mainGreen = Color(red: 0.31, green: 0.78, blue: 0.31)
 
@@ -50,24 +44,27 @@ struct NatureWasteGameView: View {
                     binsRow
                         .padding(.top, 32)
 
+                    resultsRow
+                        .padding(.top, 12)
+
                     Spacer()
 
-                    checkButton
+                    bottomButton
                 }
                 .ignoresSafeArea(edges: .top)
 
                 ForEach($currentItems) { $item in
-                    if !item.isPlaced {
-                        DraggableWasteItem(
-                            item: $item,
-                            screenSize: geo.size
-                        ) { dropPoint in
-                            handleDrop(
-                                item: &item,
-                                dropPoint: dropPoint,
-                                screenWidth: geo.size.width
-                            )
-                        }
+                    DraggableWasteItem(
+                        item: $item,
+                        screenSize: geo.size,
+                        isLocked: hasChecked
+                    ) { dropPoint in
+                        handleDrop(
+                            item: &item,
+                            dropPoint: dropPoint,
+                            screenWidth: geo.size.width,
+                            screenHeight: geo.size.height
+                        )
                     }
                 }
             }
@@ -142,11 +139,24 @@ struct NatureWasteGameView: View {
         .padding(.horizontal, 48)
     }
 
-    private var checkButton: some View {
+    private var resultsRow: some View {
+        HStack(spacing: 14) {
+            ResultLabel(bin: .rubbish, items: currentItems, hasChecked: hasChecked)
+            ResultLabel(bin: .organic, items: currentItems, hasChecked: hasChecked)
+            ResultLabel(bin: .recycle, items: currentItems, hasChecked: hasChecked)
+        }
+        .padding(.horizontal, 48)
+    }
+
+    private var bottomButton: some View {
         Button {
-            goToNextQuestion()
+            if hasChecked {
+                goToNextQuestion()
+            } else {
+                checkAnswers()
+            }
         } label: {
-            Text(questionIndex == questions.count - 1 ? "Finish" : "Check")
+            Text(hasChecked ? nextButtonTitle : "Check")
                 .font(.system(size: 32, weight: .bold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -161,8 +171,18 @@ struct NatureWasteGameView: View {
         }
     }
 
+    private var nextButtonTitle: String {
+        questionIndex == questions.count - 1 ? "Finish" : "Next"
+    }
+
     private func loadQuestion() {
         currentItems = questions[questionIndex].items
+        hasChecked = false
+    }
+
+    private func checkAnswers() {
+        hasChecked = true
+        score += currentItems.filter { $0.selectedBin == $0.correctBin }.count
     }
 
     private func goToNextQuestion() {
@@ -175,12 +195,18 @@ struct NatureWasteGameView: View {
         }
     }
 
-    private func handleDrop(item: inout WasteItem, dropPoint: CGPoint, screenWidth: CGFloat) {
-        let binTop: CGFloat = 360
-        let binBottom: CGFloat = 510
+    private func handleDrop(
+        item: inout WasteItem,
+        dropPoint: CGPoint,
+        screenWidth: CGFloat,
+        screenHeight: CGFloat
+    ) {
+        let binTop = screenHeight * 0.46
+        let binBottom = screenHeight * 0.61
 
         guard dropPoint.y >= binTop && dropPoint.y <= binBottom else {
             item.offset = .zero
+            item.selectedBin = nil
             return
         }
 
@@ -188,18 +214,18 @@ struct NatureWasteGameView: View {
 
         if dropPoint.x < screenWidth / 3 {
             selectedBin = .rubbish
+            item.xRatio = 0.23
         } else if dropPoint.x < (screenWidth / 3) * 2 {
             selectedBin = .organic
+            item.xRatio = 0.50
         } else {
             selectedBin = .recycle
+            item.xRatio = 0.77
         }
 
-        if selectedBin == item.correctBin {
-            item.isPlaced = true
-            score += 1
-        } else {
-            item.offset = .zero
-        }
+        item.selectedBin = selectedBin
+        item.yRatio = 0.55
+        item.offset = .zero
     }
 }
 
@@ -229,9 +255,45 @@ struct BinCard: View {
     }
 }
 
+struct ResultLabel: View {
+    let bin: WasteBin
+    let items: [WasteItem]
+    let hasChecked: Bool
+
+    private var droppedItems: [WasteItem] {
+        items.filter { $0.selectedBin == bin }
+    }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            ForEach(droppedItems) { item in
+                Text(item.name)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .frame(maxWidth: .infinity)
+                    .background(labelColor(for: item))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 36, alignment: .top)
+    }
+
+    private func labelColor(for item: WasteItem) -> Color {
+        guard hasChecked else {
+            return Color.gray.opacity(0.55)
+        }
+
+        return item.selectedBin == item.correctBin ? .green : .red
+    }
+}
+
 struct DraggableWasteItem: View {
     @Binding var item: WasteItem
     let screenSize: CGSize
+    let isLocked: Bool
     let onDrop: (CGPoint) -> Void
 
     var body: some View {
@@ -244,6 +306,7 @@ struct DraggableWasteItem: View {
                 y: screenSize.height * item.yRatio + item.offset.height
             )
             .gesture(
+                isLocked ? nil :
                 DragGesture()
                     .onChanged { value in
                         item.offset = value.translation
@@ -265,10 +328,10 @@ struct WasteItem: Identifiable {
     let name: String
     let imageName: String
     let correctBin: WasteBin
-    let xRatio: CGFloat
-    let yRatio: CGFloat
+    var xRatio: CGFloat
+    var yRatio: CGFloat
+    var selectedBin: WasteBin? = nil
     var offset: CGSize = .zero
-    var isPlaced = false
 }
 
 enum WasteBin {
