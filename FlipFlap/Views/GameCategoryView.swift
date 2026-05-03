@@ -13,6 +13,7 @@ struct GameCategoryView: View {
 
     @State private var selectedCategoryID: String? = nil
     @State private var showNatureWasteGame = false
+    @State private var showAnimalFoodChainGame = false
 
     private var categories: [GameCategoryItem] {
         if game.title == "Maths" {
@@ -79,6 +80,8 @@ struct GameCategoryView: View {
             Button {
                 if selectedCategoryID == "waste-management" && game.title == "Nature" {
                     showNatureWasteGame = true
+                } else if selectedCategoryID == "animal-food-chain" && game.title == "Nature" {
+                    showAnimalFoodChainGame = true
                 } else if let selectedCategoryID {
                     print("Start \(selectedCategoryID)")
                 }
@@ -98,6 +101,9 @@ struct GameCategoryView: View {
         .toolbar(.hidden, for: .tabBar)
         .navigationDestination(isPresented: $showNatureWasteGame) {
             NatureWasteGameView()
+        }
+        .navigationDestination(isPresented: $showAnimalFoodChainGame) {
+            NatureAnimalFoodChainGameView()
         }
     }
 
