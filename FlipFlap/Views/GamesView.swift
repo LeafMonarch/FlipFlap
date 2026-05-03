@@ -8,9 +8,15 @@
 import SwiftUI
 
 struct GamesView: View {
+    @Binding private var pendingGameTitleToOpen: String?
+    
     @State private var selectedGame: GameCardItem? = nil
     @State private var categoryGame: GameCardItem? = nil
     @State private var showCategory = false
+
+    init(pendingGameTitleToOpen: Binding<String?> = .constant(nil)) {
+        self._pendingGameTitleToOpen = pendingGameTitleToOpen
+    }
 
     private let columns = [
         GridItem(.flexible(), spacing: 14),
@@ -125,6 +131,12 @@ struct GamesView: View {
                     .zIndex(10)
                 }
             }
+            .onAppear {
+                openPendingDashboardGameIfNeeded()
+            }
+            .onChange(of: pendingGameTitleToOpen) { _, _ in
+                openPendingDashboardGameIfNeeded()
+            }
             .navigationDestination(isPresented: $showCategory) {
                 Group {
                     if let categoryGame {
@@ -133,6 +145,14 @@ struct GamesView: View {
                 }
             }
         }
+    }
+    
+    private func openPendingDashboardGameIfNeeded() {
+        guard let pendingGameTitleToOpen else { return }
+        guard let game = gameCards.first(where: { $0.title == pendingGameTitleToOpen }) else { return }
+
+        selectedGame = game
+        self.pendingGameTitleToOpen = nil
     }
 }
 

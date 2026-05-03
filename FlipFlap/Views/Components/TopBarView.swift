@@ -43,7 +43,7 @@ struct TopBarView: View {
         }
         .padding(.horizontal, 28)
         .padding(.top, 8)
-        .padding(.bottom, 10)§
+        .padding(.bottom, 10)
         .background(Color.white)
         .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
     }

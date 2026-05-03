@@ -11,11 +11,85 @@ import SwiftData
 struct DashboardView: View {
     @EnvironmentObject private var appSession: AppSession
 
+    @Binding private var selectedTab: Int
+    @Binding private var pendingGameTitleToOpen: String?
+    
     @Query private var messages: [TeacherMessage]
     @Query private var progressRecords: [ProgressRecord]
-
+    
     private let streakThreshold = 3
 
+    init(
+        selectedTab: Binding<Int> = .constant(0),
+        pendingGameTitleToOpen: Binding<String?> = .constant(nil)
+    ) {
+        self._selectedTab = selectedTab
+        self._pendingGameTitleToOpen = pendingGameTitleToOpen
+    }
+    
+    private let gameCards: [GameCardItem] = [
+        GameCardItem(
+            title: "Nature",
+            imageName: "game_environment",
+            iconName: "leaf.fill",
+            accentColor: .green,
+            overlayContent: GameOverlayContent(
+                description: "In this lesson, you will learn how to manage your waste; Food waste, Rubbish, Recyclables.",
+                tip: "Tip: Where do these go?",
+                options: [
+                    [
+                        OptionItem(title: "Plastic", color: .green, textColor: .white),
+                        OptionItem(title: "Chicken", color: .green, textColor: .white)
+                    ],
+                    [
+                        OptionItem(title: "Recyclable", color: Color.blue.opacity(0.22), textColor: .blue),
+                        OptionItem(title: "Food Waste", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ]
+                ]
+            )
+        ),
+        GameCardItem(
+            title: "Maths",
+            imageName: "game_maths",
+            iconName: "plus.forwardslash.minus",
+            accentColor: .pink,
+            overlayContent: GameOverlayContent(
+                description: "In this lesson, you will learn how to add, subtract, multiply and divide two numbers!",
+                tip: "Tip: What is 4 x 2?",
+                options: [
+                    [
+                        OptionItem(title: "2", color: Color.blue.opacity(0.22), textColor: .blue),
+                        OptionItem(title: "6", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ],
+                    [
+                        OptionItem(title: "8", color: .green, textColor: .white),
+                        OptionItem(title: "4", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ]
+                ]
+            )
+        ),
+        GameCardItem(
+            title: "Sports",
+            imageName: "game_pe",
+            iconName: "basketball.fill",
+            accentColor: .orange,
+            overlayContent: GameOverlayContent(
+                description: "In this lesson, you will learn about sports, movement, and healthy activities.",
+                tip: "Tip: Which one is a sport?",
+                options: [
+                    [
+                        OptionItem(title: "Football", color: .orange, textColor: .white),
+                        OptionItem(title: "Basketball", color: .orange, textColor: .white)
+                    ],
+                    [
+                        OptionItem(title: "Reading", color: Color.blue.opacity(0.22), textColor: .blue),
+                        OptionItem(title: "Sleeping", color: Color.blue.opacity(0.22), textColor: .blue)
+                    ]
+                ]
+            )
+        )
+    ]
+    
     var body: some View {
         NavigationStack {
             PageLayoutView(
@@ -142,9 +216,12 @@ struct DashboardView: View {
                 .foregroundColor(.white)
 
             HStack(spacing: 8) {
-                gameImage("GameNaturalEnvironment")
-                gameImage("GameMaths")
-                gameImage("GamePhysicalEducation")
+                ForEach(gameCards) { card in
+                    GameCardView(card: card) {
+                        pendingGameTitleToOpen = card.title
+                        selectedTab = 1
+                    }
+                }
             }
         }
         .padding(.horizontal, 28)
@@ -157,16 +234,6 @@ struct DashboardView: View {
                 endPoint: .bottom
             )
         )
-    }
-
-    private func gameImage(_ name: String) -> some View {
-        Image(name)
-            .resizable()
-            .scaledToFill()
-            .frame(height: 120)
-            .frame(maxWidth: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .shadow(color: .black.opacity(0.15), radius: 2, x: 2, y: 3)
     }
 
     private func teacherMessageCard(for student: Student) -> some View {

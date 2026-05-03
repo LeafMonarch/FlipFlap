@@ -8,24 +8,32 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @State private var selectedTab = 0
+    @State private var pendingGameTitleToOpen: String? = nil
+    
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             
             NavigationStack {
-                DashboardView()
+                DashboardView(
+                    selectedTab: $selectedTab,
+                    pendingGameTitleToOpen: $pendingGameTitleToOpen
+                )
             }
             .tabItem {
                 Image(systemName: "book.fill")
                 Text("Home")
             }
+            .tag(0)
 
             NavigationStack {
-                GamesView()
+                GamesView(pendingGameTitleToOpen: $pendingGameTitleToOpen)
             }
             .tabItem {
                 Image(systemName: "gamecontroller.fill")
                 Text("Games")
             }
+            .tag(1)
 
             NavigationStack {
                 RewardsView()
@@ -34,6 +42,7 @@ struct MainTabView: View {
                 Image(systemName: "trophy.fill")
                 Text("Rewards")
             }
+            .tag(2)
         }
         .tint(Color.blue) // selected icon/text colour
         .toolbarBackground(.visible, for: .tabBar)
