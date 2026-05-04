@@ -14,6 +14,7 @@ final class GameScore {
     var correctAnswers: Int
     var wrongAnswers: Int
     var totalQuestions: Int
+    var starsEarned: Int = 0
     var playedAt: Date
 
     var studentID: UUID
@@ -24,6 +25,7 @@ final class GameScore {
         correctAnswers: Int,
         wrongAnswers: Int,
         totalQuestions: Int,
+        starsEarned: Int = 0,
         studentID: UUID,
         studentName: String
     ) {
@@ -31,6 +33,7 @@ final class GameScore {
         self.correctAnswers = correctAnswers
         self.wrongAnswers = wrongAnswers
         self.totalQuestions = totalQuestions
+        self.starsEarned = starsEarned
         self.studentID = studentID
         self.studentName = studentName
         self.playedAt = Date()

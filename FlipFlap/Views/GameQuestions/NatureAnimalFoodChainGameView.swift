@@ -15,11 +15,13 @@ struct NatureAnimalFoodChainGameView: View {
     
     @Query(sort: \GameScore.playedAt, order: .reverse) private var savedScores: [GameScore]
 
-
     @State private var questionIndex = 0
     @State private var score = 0
     @State private var currentItems: [AnimalItem] = []
     @State private var hasChecked = false
+    
+    @State private var showCompletion = false
+    @State private var finalStars = 0
     
     private func saveGameScore(gameName: String, correct: Int, total: Int) {
         guard let student = appSession.authenticatedStudent else {
@@ -27,11 +29,14 @@ struct NatureAnimalFoodChainGameView: View {
             return
         }
 
+        let stars = calculateStars(correct: correct, total: total)
+
         let gameScore = GameScore(
             gameName: gameName,
             correctAnswers: correct,
             wrongAnswers: total - correct,
             totalQuestions: total,
+            starsEarned: stars,
             studentID: student.id,
             studentName: student.name
         )
@@ -50,6 +55,7 @@ struct NatureAnimalFoodChainGameView: View {
                 Correct: \(score.correctAnswers)
                 Wrong: \(score.wrongAnswers)
                 Total: \(score.totalQuestions)
+                Stars: \(score.starsEarned)
                 Student ID: \(score.studentID)
                 Student Name: \(score.studentName)
                 Played At: \(score.playedAt)
@@ -111,7 +117,7 @@ struct NatureAnimalFoodChainGameView: View {
                     DraggableAnimalItem(
                         item: $item,
                         screenSize: geo.size,
-                        isLocked: hasChecked
+                        isLocked: hasChecked || showCompletion
                     ) { dropPoint in
                         handleDrop(
                             item: &item,
@@ -120,6 +126,20 @@ struct NatureAnimalFoodChainGameView: View {
                             screenHeight: geo.size.height
                         )
                     }
+                }
+
+                if showCompletion {
+                    GameCompletionView(
+                        gameName: "Animal Food Chain",
+                        correctAnswers: score,
+                        totalQuestions: scoreTotal,
+                        starsEarned: finalStars,
+                        accentColor: mainGreen
+                    ) {
+                        dismiss()
+                    }
+                    .transition(.opacity)
+                    .zIndex(20)
                 }
             }
             .onAppear {
@@ -227,12 +247,16 @@ struct NatureAnimalFoodChainGameView: View {
                     )
                 )
         }
-        .disabled(!canUseBottomButton)
-        .opacity(canUseBottomButton ? 1 : 0.5)
+        .disabled(!canUseBottomButton || showCompletion)
+        .opacity(canUseBottomButton && !showCompletion ? 1 : 0.5)
     }
 
     private var nextButtonTitle: String {
         questionIndex == questions.count - 1 ? "Finish" : "Next"
+    }
+
+    private var scoreTotal: Int {
+        questions.reduce(0) { $0 + $1.items.count }
     }
 
     private func loadQuestion() {
@@ -250,15 +274,17 @@ struct NatureAnimalFoodChainGameView: View {
             questionIndex += 1
             loadQuestion()
         } else {
-            let totalItems = questions.reduce(0) { $0 + $1.items.count }
+            finalStars = calculateStars(correct: score, total: scoreTotal)
 
             saveGameScore(
                 gameName: "Animal Food Chain",
                 correct: score,
-                total: totalItems
+                total: scoreTotal
             )
 
-            dismiss()
+            withAnimation {
+                showCompletion = true
+            }
         }
     }
 
@@ -290,6 +316,22 @@ struct NatureAnimalFoodChainGameView: View {
 
         item.yRatio = 0.54
         item.offset = .zero
+    }
+    
+    private func calculateStars(correct: Int, total: Int) -> Int {
+        guard total > 0 else { return 0 }
+
+        let percentage = Double(correct) / Double(total)
+
+        if percentage == 1.0 {
+            return 3
+        } else if percentage >= 0.5 {
+            return 2
+        } else if percentage > 0 {
+            return 1
+        } else {
+            return 0
+        }
     }
 }
 

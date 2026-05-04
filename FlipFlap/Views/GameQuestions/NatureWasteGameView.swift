@@ -20,47 +20,9 @@ struct NatureWasteGameView: View {
     @State private var currentItems: [WasteItem] = []
     @State private var hasChecked = false
     
-    private func saveGameScore(gameName: String, correct: Int, total: Int) {
-        guard let student = appSession.authenticatedStudent else {
-            print("No logged in student")
-            return
-        }
-
-        let gameScore = GameScore(
-            gameName: gameName,
-            correctAnswers: correct,
-            wrongAnswers: total - correct,
-            totalQuestions: total,
-            studentID: student.id,
-            studentName: student.name
-        )
-
-        modelContext.insert(gameScore)
-
-        do {
-            try modelContext.save()
-            print("Score saved")
-
-            print("----- RAW SAVED SCORES -----")
-
-            for score in savedScores {
-                print("""
-                Game: \(score.gameName)
-                Correct: \(score.correctAnswers)
-                Wrong: \(score.wrongAnswers)
-                Total: \(score.totalQuestions)
-                Student ID: \(score.studentID)
-                Student Name: \(score.studentName)
-                Played At: \(score.playedAt)
-                -------------------------
-                """)
-            }
-
-        } catch {
-            print("Could not save score: \(error.localizedDescription)")
-        }
-    }
-
+    @State private var showCompletion = false
+    @State private var finalStars = 0
+    
     private let mainGreen = Color(red: 0.31, green: 0.78, blue: 0.31)
 
     private let questions: [WasteQuestion] = [
@@ -110,7 +72,7 @@ struct NatureWasteGameView: View {
                     DraggableWasteItem(
                         item: $item,
                         screenSize: geo.size,
-                        isLocked: hasChecked
+                        isLocked: hasChecked || showCompletion
                     ) { dropPoint in
                         handleDrop(
                             item: &item,
@@ -119,6 +81,20 @@ struct NatureWasteGameView: View {
                             screenHeight: geo.size.height
                         )
                     }
+                }
+
+                if showCompletion {
+                    GameCompletionView(
+                        gameName: "Waste Management",
+                        correctAnswers: score,
+                        totalQuestions: scoreTotal,
+                        starsEarned: finalStars,
+                        accentColor: mainGreen
+                    ) {
+                        dismiss()
+                    }
+                    .transition(.opacity)
+                    .zIndex(20)
                 }
             }
             .onAppear {
@@ -226,12 +202,16 @@ struct NatureWasteGameView: View {
                     )
                 )
         }
-        .disabled(!canUseBottomButton)
-        .opacity(canUseBottomButton ? 1 : 0.5)
+        .disabled(!canUseBottomButton || showCompletion)
+        .opacity(canUseBottomButton && !showCompletion ? 1 : 0.5)
     }
 
     private var nextButtonTitle: String {
         questionIndex == questions.count - 1 ? "Finish" : "Next"
+    }
+    
+    private var scoreTotal: Int {
+        questions.reduce(0) { $0 + $1.items.count }
     }
 
     private func loadQuestion() {
@@ -249,15 +229,17 @@ struct NatureWasteGameView: View {
             questionIndex += 1
             loadQuestion()
         } else {
-            let totalItems = questions.reduce(0) { $0 + $1.items.count }
+            finalStars = calculateStars(correct: score, total: scoreTotal)
 
             saveGameScore(
                 gameName: "Waste Management",
                 correct: score,
-                total: totalItems
+                total: scoreTotal
             )
 
-            dismiss()
+            withAnimation {
+                showCompletion = true
+            }
         }
     }
 
@@ -292,6 +274,67 @@ struct NatureWasteGameView: View {
         item.selectedBin = selectedBin
         item.yRatio = 0.55
         item.offset = .zero
+    }
+    
+    private func calculateStars(correct: Int, total: Int) -> Int {
+        guard total > 0 else { return 0 }
+
+        let percentage = Double(correct) / Double(total)
+
+        if percentage == 1.0 {
+            return 3
+        } else if percentage >= 0.5 {
+            return 2
+        } else if percentage > 0 {
+            return 1
+        } else {
+            return 0
+        }
+    }
+    
+    private func saveGameScore(gameName: String, correct: Int, total: Int) {
+        guard let student = appSession.authenticatedStudent else {
+            print("No logged in student")
+            return
+        }
+
+        let stars = calculateStars(correct: correct, total: total)
+
+        let gameScore = GameScore(
+            gameName: gameName,
+            correctAnswers: correct,
+            wrongAnswers: total - correct,
+            totalQuestions: total,
+            starsEarned: stars,
+            studentID: student.id,
+            studentName: student.name
+        )
+
+        modelContext.insert(gameScore)
+
+        do {
+            try modelContext.save()
+            print("Score saved")
+
+            print("----- RAW SAVED SCORES -----")
+
+            for score in savedScores {
+                print("""
+                Game: \(score.gameName)
+                Correct: \(score.correctAnswers)
+                Wrong: \(score.wrongAnswers)
+                Total: \(score.totalQuestions)
+                Stars: \(score.starsEarned)
+                Student ID: \(score.studentID)
+                Student Name: \(score.studentName)
+                Played At: \(score.playedAt)
+                -------------------------
+                """)
+            }
+
+        } catch {
+            print("Could not save score: \(error.localizedDescription)")
+        }
     }
 }
 

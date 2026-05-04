@@ -26,17 +26,23 @@ struct MathsSubtractionGameView: View {
     @State private var hasChecked = false
     @State private var score = 0
     
+    @State private var showCompletion = false
+    @State private var finalStars = 0
+    
     private func saveGameScore(gameName: String, correct: Int, total: Int) {
         guard let student = appSession.authenticatedStudent else {
             print("No logged in student")
             return
         }
 
+        let stars = calculateStars(correct: correct, total: total)
+
         let gameScore = GameScore(
             gameName: gameName,
             correctAnswers: correct,
             wrongAnswers: total - correct,
             totalQuestions: total,
+            starsEarned: stars,
             studentID: student.id,
             studentName: student.name
         )
@@ -55,6 +61,7 @@ struct MathsSubtractionGameView: View {
                 Correct: \(score.correctAnswers)
                 Wrong: \(score.wrongAnswers)
                 Total: \(score.totalQuestions)
+                Stars: \(score.starsEarned)
                 Student ID: \(score.studentID)
                 Student Name: \(score.studentName)
                 Played At: \(score.playedAt)
@@ -77,22 +84,38 @@ struct MathsSubtractionGameView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-                .frame(height: 180)
+        ZStack {
+            VStack(spacing: 0) {
+                header
+                    .frame(height: 180)
 
-            questionCard
-                .padding(.top, 42)
+                questionCard
+                    .padding(.top, 42)
 
-            answerGrid
-                .padding(.top, 42)
+                answerGrid
+                    .padding(.top, 42)
 
-            Spacer()
+                Spacer()
 
-            bottomButton
+                bottomButton
+            }
+            .background(Color.white)
+            .ignoresSafeArea(edges: .top)
+
+            if showCompletion {
+                GameCompletionView(
+                    gameName: "Subtraction",
+                    correctAnswers: score,
+                    totalQuestions: questions.count,
+                    starsEarned: finalStars,
+                    accentColor: mainRed
+                ) {
+                    dismiss()
+                }
+                .transition(.opacity)
+                .zIndex(20)
+            }
         }
-        .background(Color.white)
-        .ignoresSafeArea(edges: .top)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -156,7 +179,7 @@ struct MathsSubtractionGameView: View {
         ) {
             ForEach(questions[questionIndex].options, id: \.self) { answer in
                 Button {
-                    if !hasChecked {
+                    if !hasChecked && !showCompletion {
                         selectedAnswer = answer
                     }
                 } label: {
@@ -174,6 +197,7 @@ struct MathsSubtractionGameView: View {
                         )
                 }
                 .buttonStyle(.plain)
+                .disabled(showCompletion)
             }
         }
         .padding(.horizontal, 48)
@@ -200,8 +224,8 @@ struct MathsSubtractionGameView: View {
                     )
                 )
         }
-        .disabled(selectedAnswer == nil)
-        .opacity(selectedAnswer == nil ? 0.5 : 1)
+        .disabled(selectedAnswer == nil || showCompletion)
+        .opacity(selectedAnswer == nil || showCompletion ? 0.5 : 1)
     }
 
     private var nextButtonTitle: String {
@@ -238,13 +262,31 @@ struct MathsSubtractionGameView: View {
             selectedAnswer = nil
             hasChecked = false
         } else {
+            finalStars = calculateStars(correct: score, total: questions.count)
+
             saveGameScore(
                 gameName: "Subtraction",
                 correct: score,
                 total: questions.count
             )
 
-            dismiss()
+            withAnimation {
+                showCompletion = true
+            }
+        }
+    }
+
+    private func calculateStars(correct: Int, total: Int) -> Int {
+        guard total > 0 else { return 0 }
+
+        if correct == total {
+            return 3
+        } else if correct >= total / 2 {
+            return 2
+        } else if correct > 0 {
+            return 1
+        } else {
+            return 0
         }
     }
 }
