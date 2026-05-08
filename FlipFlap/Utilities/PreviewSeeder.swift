@@ -27,13 +27,20 @@ enum PreviewSeeder {
               existing.isEmpty else {
             return
         }
+        
+        let yesterday = Calendar.current.date(
+            byAdding: .day,
+            value: -1,
+            to: Calendar.current.startOfDay(for: Date())
+        )
 
         let jordan = Student(
             name: "Jordan",
             age: 8,
             avatarName: "happy",
             loginType: .colour,
-            favouriteColour: .red
+            favouriteColour: .red,
+            streak: 1
         )
 
         let layla = Student(
@@ -41,7 +48,9 @@ enum PreviewSeeder {
             age: 10,
             avatarName: "mischievious",
             loginType: .sport,
-            favouriteSport: .basketball
+            favouriteSport: .basketball,
+            streak: 11,
+            lastStreakUpdateDate: yesterday
         )
 
         modelContext.insert(jordan)

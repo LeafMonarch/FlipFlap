@@ -118,6 +118,6 @@ final class AuthController {
 
         student.lastStreakUpdateDate = today
         try? modelContext.save()
-    }
+    }   
 }
 
