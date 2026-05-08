@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct GameCompletionView: View {
     let gameName: String
@@ -76,6 +77,12 @@ struct GameCompletionView: View {
             }
         }
         .ignoresSafeArea()
+        .onAppear {
+            print("Game completed - vibration triggered")
+            
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
