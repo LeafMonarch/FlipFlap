@@ -18,48 +18,67 @@ struct GameCompletionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 26) {
-                Text("FINISHED")
-                    .font(.system(size: 34, weight: .heavy))
-                    .foregroundColor(.white)
-                    .padding(.top, 78)
 
-                Spacer()
+            ZStack(alignment: .top) {
 
-                HStack(spacing: 10) {
-                    ForEach(1...3, id: \.self) { star in
-                        Image(systemName: star <= starsEarned ? "star.fill" : "star")
-                            .font(.system(size: star == 2 ? 86 : 58, weight: .heavy))
-                            .foregroundColor(.yellow)
-                            .shadow(color: .black.opacity(0.18), radius: 5, y: 4)
+                VStack(spacing: 0) {
+
+                    // MARK: - Green Header Section
+
+                    VStack(spacing: 26) {
+
+                        Text("FINISHED")
+                            .font(.system(size: 34, weight: .heavy))
+                            .foregroundColor(.white)
+                            .padding(.top, 78)
+
+                        Spacer()
+
+                        HStack(spacing: 10) {
+                            ForEach(1...3, id: \.self) { star in
+                                Image(systemName: star <= starsEarned ? "star.fill" : "star")
+                                    .font(.system(size: star == 2 ? 86 : 58, weight: .heavy))
+                                    .foregroundColor(.yellow)
+                                    .shadow(
+                                        color: .black.opacity(0.18),
+                                        radius: 5,
+                                        y: 4
+                                    )
+                            }
+                        }
+
+                        Text(message)
+                            .font(.system(size: 32, weight: .medium))
+                            .foregroundColor(.white)
+
+                        Spacer()
+                            .frame(height: 40)
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 430)
+                    .background(accentColor)
+
+                    VStack(spacing: 24) {
+
+                        Text("\(correctAnswers) correct, \(totalQuestions - correctAnswers) incorrect")
+                            .font(.system(size: 24, weight: .medium))
+                            .foregroundColor(.blue)
+
+                        Text("You earned \(starsEarned) out of 3 stars")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.blue.opacity(0.75))
+
+                        Spacer()
+                    }
+                    .padding(.top, 80)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white)
                 }
 
-                Text(message)
-                    .font(.system(size: 32, weight: .medium))
-                    .foregroundColor(.white)
-
                 scoreCard
-                    .offset(y: 20)
+                    .offset(y: 392)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 430)
-            .background(accentColor)
 
-            VStack(spacing: 24) {
-                Text("\(correctAnswers) correct, \(totalQuestions - correctAnswers) incorrect")
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.blue)
-
-                Text("You earned \(starsEarned) out of 3 stars")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.blue.opacity(0.75))
-
-                Spacer()
-            }
-            .padding(.top, 58)
-            .frame(maxWidth: .infinity)
-            .background(Color.white)
 
             Button(action: onNext) {
                 Text("NEXT")
@@ -69,7 +88,10 @@ struct GameCompletionView: View {
                     .frame(height: 96)
                     .background(
                         LinearGradient(
-                            colors: [Color.green, Color.green.opacity(0.85)],
+                            colors: [
+                                Color.green,
+                                Color.green.opacity(0.85)
+                            ],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -79,7 +101,6 @@ struct GameCompletionView: View {
         .ignoresSafeArea()
         .onAppear {
             print("Game completed - vibration triggered")
-            
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
         }
@@ -101,7 +122,11 @@ struct GameCompletionView: View {
         .frame(width: 290, height: 76)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.16), radius: 12, y: 8)
+        .shadow(
+            color: .black.opacity(0.16),
+            radius: 12,
+            y: 8
+        )
     }
 
     private var message: String {
