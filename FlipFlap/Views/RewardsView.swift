@@ -23,13 +23,6 @@ struct RewardsView: View {
         RewardMilestone(title: "Champion", subtitle: "Earn 18 stars", starsRequired: 18, color: .purple, icon: "crown.fill")
     ]
     
-//    private var totalStars: Int {
-//        guard let student = appSession.authenticatedStudent else { return 0 }
-//        return progressRecords
-//            .filter { $0.studentName == student.name }
-//            .reduce(0) { $0 + Int($1.progressFraction * 10) }
-//    }
-    
     private var totalStars: Int {
         guard let student = appSession.authenticatedStudent else { return 0 }
 
@@ -94,6 +87,10 @@ struct RewardsView: View {
                                 ZStack {
                                     RewardRoadPath(points: points)
 
+                                    RewardProgressTrail(
+                                        points: Array(points.prefix(currentIndex + 1))
+                                    )
+                                    
                                     ForEach(Array(milestones.enumerated()), id: \.element.id) { index, milestone in
                                         RewardNode(
                                             milestone: milestone,
@@ -111,8 +108,8 @@ struct RewardsView: View {
                                         .overlay(Circle().stroke(Color.white, lineWidth: 4))
                                         .shadow(color: .black.opacity(0.18), radius: 5, x: 0, y: 4)
                                         .position(
-                                            x: points[currentIndex].x + 42,
-                                            y: points[currentIndex].y - 38
+                                            x: min(width - 34, points[currentIndex].x + 62),
+                                            y: points[currentIndex].y + 12
                                         )
                                 }
                             }
@@ -245,6 +242,53 @@ struct RewardRoadPath: View {
             control1: CGPoint(x: points[3].x - hOffset, y: points[3].y),
             control2: CGPoint(x: points[4].x - hOffset, y: points[4].y)
         )
+
+        return path
+    }
+}
+
+struct RewardProgressTrail: View {
+    let points: [CGPoint]
+
+    var body: some View {
+        progressPath
+            .stroke(
+                Color.green.opacity(0.85),
+                style: StrokeStyle(
+                    lineWidth: 16,
+                    lineCap: .round,
+                    lineJoin: .round
+                )
+            )
+            .shadow(color: .green.opacity(0.25), radius: 6, x: 0, y: 3)
+    }
+
+    private var progressPath: Path {
+        var path = Path()
+        guard points.count >= 2 else { return path }
+
+        let hOffset = 180.0
+
+        path.move(to: points[0])
+
+        for index in 1..<points.count {
+            let previous = points[index - 1]
+            let current = points[index]
+
+            let movingRight = current.x > previous.x
+
+            path.addCurve(
+                to: current,
+                control1: CGPoint(
+                    x: previous.x + (movingRight ? hOffset : -hOffset),
+                    y: previous.y
+                ),
+                control2: CGPoint(
+                    x: current.x + (movingRight ? hOffset : -hOffset),
+                    y: current.y
+                )
+            )
+        }
 
         return path
     }
