@@ -12,21 +12,47 @@ import SwiftData
 
 struct RewardsView: View {
     @EnvironmentObject private var appSession: AppSession
-    @Query private var progressRecords: [ProgressRecord]
 
+    @Query private var savedScores: [GameScore]
+    
     private let milestones: [RewardMilestone] = [
         RewardMilestone(title: "Starter", subtitle: "Begin your journey", starsRequired: 0, color: .green, icon: "leaf.fill"),
-        RewardMilestone(title: "Explorer", subtitle: "Earn 10 stars", starsRequired: 10, color: .blue, icon: "safari.fill"),
-        RewardMilestone(title: "Thinker", subtitle: "Earn 25 stars", starsRequired: 25, color: .pink, icon: "brain.head.profile"),
-        RewardMilestone(title: "Challenger", subtitle: "Earn 50 stars", starsRequired: 50, color: .orange, icon: "flame.fill"),
-        RewardMilestone(title: "Champion", subtitle: "Earn 100 stars", starsRequired: 100, color: .purple, icon: "crown.fill")
+        RewardMilestone(title: "Explorer", subtitle: "Earn 3 stars", starsRequired: 3, color: .blue, icon: "safari.fill"),
+        RewardMilestone(title: "Thinker", subtitle: "Earn 7 stars", starsRequired: 7, color: .pink, icon: "brain.head.profile"),
+        RewardMilestone(title: "Challenger", subtitle: "Earn 12 stars", starsRequired: 12, color: .orange, icon: "flame.fill"),
+        RewardMilestone(title: "Champion", subtitle: "Earn 18 stars", starsRequired: 18, color: .purple, icon: "crown.fill")
     ]
+    
+//    private var totalStars: Int {
+//        guard let student = appSession.authenticatedStudent else { return 0 }
+//        return progressRecords
+//            .filter { $0.studentName == student.name }
+//            .reduce(0) { $0 + Int($1.progressFraction * 10) }
+//    }
     
     private var totalStars: Int {
         guard let student = appSession.authenticatedStudent else { return 0 }
-        return progressRecords
-            .filter { $0.studentName == student.name }
-            .reduce(0) { $0 + Int($1.progressFraction * 10) }
+
+        return savedScores
+            .filter { $0.studentID == student.id }
+            .reduce(0) { $0 + $1.starsEarned }
+    }
+    
+    private var isStreakActive: Bool {
+        guard let student = appSession.authenticatedStudent else { return false }
+        return student.streak >= 3
+    }
+
+    private var summaryGradientColors: [Color] {
+        isStreakActive
+            ? [
+                AppTheme.Colors.orangePrimary,
+                AppTheme.Colors.orangeSecondary
+            ]
+            : [
+                Color(red: 0.12, green: 0.55, blue: 0.86),
+                Color(red: 0.11, green: 0.76, blue: 0.95)
+            ]
     }
 
     private var currentMilestone: RewardMilestone {
@@ -134,10 +160,7 @@ struct RewardsView: View {
         .padding(20)
         .background(
             LinearGradient(
-                colors: [
-                    Color(red: 0.12, green: 0.55, blue: 0.86),
-                    Color(red: 0.11, green: 0.76, blue: 0.95)
-                ],
+                colors: summaryGradientColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -146,18 +169,6 @@ struct RewardsView: View {
         .shadow(color: .black.opacity(0.16), radius: 8, x: 0, y: 5)
         .padding(.horizontal, 22)
     }
-
-//    private func rewardPoints(width: CGFloat, height: CGFloat) -> [CGPoint] {
-//        // These points follow a soft ice-road route like the Figma map:
-//        // left → right → left → right → upper-left, without harsh diagonal skewing.
-//        [
-//            CGPoint(x: width * 0.18, y: height * 0.82),
-//            CGPoint(x: width * 0.76, y: height * 0.68),
-//            CGPoint(x: width * 0.30, y: height * 0.52),
-//            CGPoint(x: width * 0.78, y: height * 0.36),
-//            CGPoint(x: width * 0.42, y: height * 0.18)
-//        ]
-//    }
     
     private func rewardPoints(width: CGFloat, height: CGFloat) -> [CGPoint] {
         [
